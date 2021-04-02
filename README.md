@@ -22,8 +22,8 @@ This folder contains all of the R scripts.
 This file contains topography, allometry, soil, and foliar data. The specific column information is:
 - *ID*: the sample ID indicating site_rep_elevation
 - *Name*: site name
-- *longitude*: longitude (decimal degrees) at individual tree
-- *latitude*: latitude (decimal degrees) at individual tree
+- *Longitude*: longitude (decimal degrees) at individual tree
+- *Latitude*: latitude (decimal degrees) at individual tree
 - *Elevation*: elevation (m) at individual tree
 - *Slope*: slope at individual tree measured using ArcGIS 
 - *Aspect*: aspect at individual tree measured using ArcGIS
@@ -34,12 +34,12 @@ This file contains topography, allometry, soil, and foliar data. The specific co
 - *d15N*: foliar nitrogen-15 isotope measured with a Thermo Delta V+ IR-MS continuous flow isotope ratio mass spectrometer (‰)
 - *C_foliar*: foliar carbon measured with a Leco CN-2000 Carbon-Nitrogen Analyzer (g<sup>1</sup> g<sup>-1</sup>)
 - *N_foliar*: foliar nitrogen measured with a Leco CN-2000 Carbon-Nitrogen Analyzer (g<sup>1</sup> g<sup>-1</sup>)
-- *Ca_foliar*: foliar calcium (g<sup>1</sup> g<sup>-1</sup>)
-- *P_foliar*: foliar phosphorus (g<sup>1</sup> g<sup>-1</sup>)
-- *K_foliar*: foliar potassium (g<sup>1</sup> g<sup>-1</sup>)
-- *Mg_foliar*: foliar magnesium (g<sup>1</sup> g<sup>-1</sup>)
-- *Al_foliar*: foliar aluminum (g<sup>1</sup> g<sup>-1</sup>)
-- *Zn_foliar*: foliar zinc (g<sup>1</sup> g<sup>-1</sup>)
+- *Ca_foliar*: foliar calcium measured with a TJA Model 975 AtomComp ICP-AES (g<sup>1</sup> g<sup>-1</sup>)
+- *P_foliar*: foliar phosphorus measured with a TJA Model 975 AtomComp ICP-AES (g<sup>1</sup> g<sup>-1</sup>)
+- *K_foliar*: foliar potassium measured with a TJA Model 975 AtomComp ICP-AES (g<sup>1</sup> g<sup>-1</sup>)
+- *Mg_foliar*: foliar magnesium measured with a TJA Model 975 AtomComp ICP-AES (g<sup>1</sup> g<sup>-1</sup>)
+- *Al_foliar*: foliar aluminum measured with a TJA Model 975 AtomComp ICP-AES (g<sup>1</sup> g<sup>-1</sup>)
+- *Zn_foliar*: foliar zinc measured with a TJA Model 975 AtomComp ICP-AES (g<sup>1</sup> g<sup>-1</sup>)
 - *Ca_soil*: soil calcium (g<sup>1</sup> g<sup>-1</sup>)
 - *P_soil*: soil phosphorus (g<sup>1</sup> g<sup>-1</sup>)
 - *K_soil*: soil potassium (g<sup>1</sup> g<sup>-1</sup>)
@@ -48,13 +48,20 @@ This file contains topography, allometry, soil, and foliar data. The specific co
 - *Zn_soil*: soil zinc (g<sup>1</sup> g<sup>-1</sup>)
 - *pH*: soil pH
 - *CEC*: soil cation exchange capacity (cmol<sub>c</sub> kg<sup>-1</sup>)
-- *C_soil*: soil carbon (g<sup>1</sup> g<sup>-1</sup>)
-- *N_soil*: soil nitrogen (g<sup>1</sup> g<sup>-1</sup>)
+- *C_soil*: soil carbon measured with a Leco CN-2000 Carbon-Nitrogen Analyzer (g<sup>1</sup> g<sup>-1</sup>)
+- *N_soil*: soil nitrogen measured with a Leco CN-2000 Carbon-Nitrogen Analyzer (g<sup>1</sup> g<sup>-1</sup>)
 - *Retention*: soil water retention (%)
 
 ### /data/mdi_stand_density.csv
 This file contains stand density data. The specific column information is:
-- 
+- *site*: site name, corresponds to *Name* column in [mdi_all_clean.csv](https://github.com/SmithEcophysLab/mtDesertIsland_Pinusrigida/data/mdi_all_clean.csv)
+- *rep*: individual tree measured within site
+- *distance_1*: distance from individual tree to first nearest neighbor (m)
+- *distsnce_2*: distance from individual tree to second nearest neighbor (m)
+- *distance_3*: distance from individual tree to third nearest neighbor (m)
+- *distance_4*: distance from individual tree to fourth nearest neighbor (m)
+- *distance_5*: distance from individual tree to fifth nearest neighbor (m)
+- *mean_distance*: mean distance between individual tree and five nearest neighbors (m)
 
 ### /scripts/mdi_pitchpine_analyses.csv
-This file contains R code with the data analysis, graph and table creation.
+This file contains R code for data analysis and graph and table creation.
