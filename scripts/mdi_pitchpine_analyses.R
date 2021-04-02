@@ -89,11 +89,11 @@ data_density$Site <- factor(data_density$Site, levels = c("WON", "GOR", "STS", "
 
 ## create a generic variable set to pass to formula argument
 ind_variables <- c('elevation_fac', 'fire')
-dep_variables <- c("log(Elevation)", "log(height)", "log(canopy)", "log(diam)",
+dep_variables <- c("log(Elevation)", "log(Height)", "log(Canopy)", "log(Diam)",
                   "d13C", "d15N", "C_foliar", "N_foliar", "CN_foliar", "Ca_foliar", "log(P_foliar)",
                   "log(K_foliar)", "Mg_foliar", "Al_foliar", "log(Zn_foliar)", 
                   "Ca_soil", "log(P_soil)", "K_soil", "Mg_soil", "log(Al_soil)", "log(Zn_soil)", 
-                  "pH", "CEC", "C_soil", "N_soil", "log(CN_soil)", "asin(sqrt(0.01 * retention))")
+                  "pH", "CEC", "C_soil", "N_soil", "log(CN_soil)", "asin(sqrt(0.01 * Retention))")
 
 #### fit models and explore results ####
 
@@ -167,9 +167,9 @@ Anova(height_lm)
 cld.emmGrid(emmeans(height_lm, ~elevation_fac * fire))
 
 #### get pairwise letters for boxplot
-height_letters <- letters_adj(dfy = data$height, y = "height", adjy = "log(height)")
+height_letters <- letters_adj(dfy = data$Height, y = "Height", adjy = "log(Height)")
 
-(plot_height <- ggplot(data = data, aes(x = Site, y = height)) +
+(plot_height <- ggplot(data = data, aes(x = Site, y = Height)) +
     geom_rect(data = NULL, aes(xmin = 0, xmax = 2.5, ymin = -Inf, ymax = Inf),
               fill = "grey") +
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
@@ -191,9 +191,9 @@ anova(canopy_lm)
 cld.emmGrid(emmeans(canopy_lm, ~elevation_fac * fire))
 
 #### get pairwise letters for boxplot
-canopy_letters <- letters_adj(dfy = data$canopy, y = "canopy", adjy = "log(canopy)")
+canopy_letters <- letters_adj(dfy = data$Canopy, y = "Canopy", adjy = "log(Canopy)")
 
-(plot_canopy <- ggplot(data = data, aes(x = Site, y = canopy)) +
+(plot_canopy <- ggplot(data = data, aes(x = Site, y = Canopy)) +
     geom_rect(data = NULL, aes(xmin = 0, xmax = 2.5, ymin = -Inf, ymax = Inf),
               fill = "grey") +
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
@@ -215,9 +215,9 @@ anova(diam_lm)
 cld.emmGrid(emmeans(diam_lm, ~elevation_fac * fire))
 
 #### get pairwise letters for boxplot
-diam_letters <- letters_adj(dfy = data$diam, y = "diam", adjy = "log(diam)")
+diam_letters <- letters_adj(dfy = data$Diam, y = "Diam", adjy = "log(Diam)")
 
-(plot_diam <- ggplot(data = data, aes(x = Site, y = diam)) +
+(plot_diam <- ggplot(data = data, aes(x = Site, y = Diam)) +
     geom_rect(data = NULL, aes(xmin = 0, xmax = 2.5, ymin = -Inf, ymax = Inf),
               fill = "grey") +
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
@@ -834,9 +834,9 @@ anova(retention_lm)
 cld.emmGrid(emmeans(retention_lm, ~elevation_fac * fire))
 
 #### get pairwise letters for boxplot
-retention_letters <- letters_adj(dfy = data$retention, y = "retention", adjy = "asin(sqrt(0.01 * retention))")
+retention_letters <- letters_adj(dfy = data$Retention, y = "Retention", adjy = "asin(sqrt(0.01 * Retention))")
 
-(plot_retention <- ggplot(data = data, aes(x = Site, y = retention)) +
+(plot_retention <- ggplot(data = data, aes(x = Site, y = Retention)) +
     geom_rect(data = NULL, aes(xmin = 0, xmax = 2.5, ymin = -Inf, ymax = Inf),
               fill = "grey") +
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
@@ -858,7 +858,7 @@ retention_letters <- letters_adj(dfy = data$retention, y = "retention", adjy = "
 
 ### topography
 #### create table with mean latitude, longitude, elevation, slope, and aspect for each site
-topography <- data %>% group_by(Site) %>% summarise_at(vars(latitude, longitude, Elevation, Slope, Aspect), mean, na.rm = TRUE)
+topography <- data %>% group_by(Site) %>% summarise_at(vars(Latitude, Longitude, Elevation, Slope, Aspect), mean, na.rm = TRUE)
 write.csv(topography, "analyses/tables/topography.csv")
 
 ### allometry
