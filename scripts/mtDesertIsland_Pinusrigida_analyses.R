@@ -44,11 +44,11 @@ letters_adj <- function(df = data, x = "Site", dfy, y, adjy){
 
 #### read in cleaned data ####
 
-data <- read.csv('data/mdi_all_clean.csv')
+data <- read.csv('../data/mtDesertIsland_data.csv')
 data$CN_foliar <- data$C_foliar/data$N_foliar
 data$CN_soil <- data$C_soil/data$N_soil
 
-data_density <- read.csv('data/mdi_stand_density.csv')
+data_density <- read.csv('../data/mtDesertIsland_stand_density.csv')
 colnames(data_density)[1] <- "Name" #rename to match data
 
 ## assign fire history status to each site
@@ -141,9 +141,6 @@ watson.two.test(aspect_GOR, aspect_SCT) # 0.05 < P < 0.1
 watson.two.test(aspect_STS, aspect_SCT) # P < 0.001
 
 #### circular plots for each site
-jpeg(filename = "analyses/plots/plots_aspect.jpeg", width = 3000, 
-     height = 3000, units = 'px')
-par(mfrow = c(2, 2), cex.lab = 6, cex.main = 6, mar = c(5.5, 8.5, 5.5, 2.5))
 plot_aspect_CADCLIFFS <- plot.circular(aspect_CADCLIFFS, main = 'Gorham Cliffs (a)', 
                                       ylab = "Fire", 
                                       cex = 8, col = "red", pch = 16)
@@ -155,7 +152,6 @@ plot_aspect_WOND <- plot.circular(aspect_WOND, main = 'Wonderland (b)',
 plot_aspect_STSAUV <- plot.circular(aspect_STSAUV, main = 'St. Sauveur (c)', 
                                    xlab = "High Elevation", 
                                    cex = 8, col = "blue", pch = 17)
-dev.off()
 
 ## allometry
 ### height
@@ -859,45 +855,52 @@ retention_letters <- letters_adj(dfy = data$Retention, y = "Retention", adjy = "
 ### topography
 #### create table with mean latitude, longitude, elevation, slope, and aspect for each site
 topography <- data %>% group_by(Site) %>% summarise_at(vars(Latitude, Longitude, Elevation, Slope, Aspect), mean, na.rm = TRUE)
-write.csv(topography, "analyses/tables/topography.csv")
 
 ### allometry
 #### create table with degrees of f reedom, f-value, p-value results from linear models
-write.csv(cbind(as.matrix(anova(height_lm)[, c(1, 4, 5)]), 
-                as.matrix(anova(canopy_lm)[, c(1, 4, 5)]), 
-                as.matrix(anova(diam_lm)[, c(1, 4, 5)]),
-                as.matrix(anova(density_lm)[, c(1, 4, 5)])),
-          'analyses/tables/allometry.csv')
+allometry <- cbind(as.matrix(anova(height_lm)[, c(1, 4, 5)]), 
+                   as.matrix(anova(canopy_lm)[, c(1, 4, 5)]), 
+                   as.matrix(anova(diam_lm)[, c(1, 4, 5)]),
+                   as.matrix(anova(density_lm)[, c(1, 4, 5)]))
 
 ### foliar organics
 #### create table with degrees of f reedom, f-value, p-value results from linear models
-write.csv(cbind(as.matrix(anova(C_foliar_lm)[, c(1, 4, 5)]), 
+foliar_cn <- cbind(as.matrix(anova(C_foliar_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(N_foliar_lm)[, c(1, 4, 5)]), 
-                as.matrix(anova(CN_foliar_lm)[, c(1, 4, 5)])),
-          'analyses/tables/foliar_cn.csv')
+                as.matrix(anova(CN_foliar_lm)[, c(1, 4, 5)]))
 
 ### foliar inorganics
 #### create table with degrees of f reedom, f-value, p-value results from linear models
-write.csv(cbind(as.matrix(anova(Ca_foliar_lm)[, c(1, 4, 5)]), 
+foliar_inorganics <- cbind(as.matrix(anova(Ca_foliar_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(P_foliar_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(K_foliar_lm)[, c(1, 4, 5)]),
                 as.matrix(anova(Mg_foliar_lm)[, c(1, 4, 5)]),
                 as.matrix(anova(Al_foliar_lm)[, c(1, 4, 5)]),
-                as.matrix(anova(Zn_foliar_lm)[, c(1, 4, 5)])),
-          'analyses/tables/foliar_inorganics.csv')
+                as.matrix(anova(Zn_foliar_lm)[, c(1, 4, 5)]))
 
 ### foliar isotopes
 #### create table with degrees of f reedom, f-value, p-value results from linear models
-write.csv(cbind(as.matrix(anova(d13C_lm)[, c(1, 4, 5)]), 
-                as.matrix(anova(d15N_lm)[, c(4, 5)])),
-          'analyses/tables/foliar_isotope.csv')
+foliar_isotopes <- cbind(as.matrix(anova(d13C_lm)[, c(1, 4, 5)]), 
+                as.matrix(anova(d15N_lm)[, c(4, 5)]))
 
 ### soil organics
 #### create table with degrees of f reedom, f-value, p-value results from linear models
-write.csv(cbind(as.matrix(anova(C_soil_lm)[, c(1, 4, 5)]), 
+soil_organics <- cbind(as.matrix(anova(C_soil_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(N_soil_lm)[, c(1, 4, 5)]), 
-                as.matrix(anova(CN_soil_lm)[, c(1, 4, 5)])),
-          'analyses/tables/soil_organics.csv')
+                as.matrix(anova(CN_soil_lm)[, c(1, 4, 5)]))
+
+### soil inorganics
+soil_inorganics <- cbind(as.matrix(anova(Ca_soil_lm)[, c(1, 4, 5)]), 
+                as.matrix(anova(P_soil_lm)[, c(4, 5)]), 
+                as.matrix(anova(K_soil_lm)[, c(4, 5)]),
+                as.matrix(anova(Mg_soil_lm)[, c(4, 5)]),
+                as.matrix(anova(Al_soil_lm)[, c(4, 5)]),
+                as.matrix(anova(Zn_soil_lm)[, c(4, 5)]))
+
+## soil characteristics
+soil_characteristics <- cbind(as.matrix(anova(retention_lm)[, c(1, 4, 5)]), 
+                as.matrix(anova(pH_lm)[, c(4, 5)]), 
+                as.matrix(anova(CEC_lm)[, c(4, 5)]))
 
 (summary(emmeans(canopy_lm, ~elevation_fac))[1,2] - summary(emmeans(canopy_lm, ~elevation_fac))[2,2])/ summary(emmeans(canopy_lm, ~elevation_fac))[2,2]
 
@@ -912,52 +915,8 @@ write.csv(cbind(as.matrix(anova(C_soil_lm)[, c(1, 4, 5)]),
 (summary(emmeans(C_soil_lm, ~elevation_fac))[1,2] - summary(emmeans(C_soil_lm, ~elevation_fac))[2,2])/ summary(emmeans(C_soil_lm, ~elevation_fac))[2,2]
 (summary(emmeans(CN_soil_lm, ~elevation_fac))[1,2] - summary(emmeans(CN_soil_lm, ~elevation_fac))[2,2])/ summary(emmeans(CN_soil_lm, ~elevation_fac))[2,2]
 
-### soil inorganics
-write.csv(cbind(as.matrix(anova(Ca_soil_lm)[, c(1, 4, 5)]), 
-                as.matrix(anova(P_soil_lm)[, c(4, 5)]), 
-                as.matrix(anova(K_soil_lm)[, c(4, 5)]),
-                as.matrix(anova(Mg_soil_lm)[, c(4, 5)]),
-                as.matrix(anova(Al_soil_lm)[, c(4, 5)]),
-                as.matrix(anova(Zn_soil_lm)[, c(4, 5)])),
-          'analyses/tables/soil_inorganics.csv')
 
 (summary(emmeans(K_soil_lm, ~fire))[1,2] - summary(emmeans(K_soil_lm, ~fire))[2,2])/ summary(emmeans(K_soil_lm, ~fire))[2,2]
 (summary(emmeans(Ca_soil_lm, ~elevation_fac))[1,2] - summary(emmeans(Ca_soil_lm, ~elevation_fac))[2,2])/ summary(emmeans(Ca_soil_lm, ~elevation_fac))[2,2]
-
-## soil characteristics
-write.csv(cbind(as.matrix(anova(retention_lm)[, c(1, 4, 5)]), 
-                as.matrix(anova(pH_lm)[, c(4, 5)]), 
-                as.matrix(anova(CEC_lm)[, c(4, 5)])),
-          'analyses/tables/soil_char.csv')
-
-#### save graphs ####
-
-## allometry
-ggsave("analyses/plots/plots_allometry.jpeg", plot = plots_allometry,
-       width = 28, height = 18, units = "cm", dpi = 600) # 4 panels
-
-## foliar organics
-ggsave("analyses/plots/plots_foliar_organics.jpeg", plot = plots_foliar_organics,
-       width = 42, height = 15, units = "cm", dpi = 600) # 3 panels
-
-## foliar inorganics
-ggsave("analyses/plots/plots_foliar_inorganics.jpeg", plot = plots_foliar_inorganics,
-       width = 45, height = 25, units = "cm", dpi = 600) # 6 panels
-
-## foliar isotopes
-ggsave("analyses/plots/plots_foliar_isotopes.jpeg", plot = plots_foliar_isotopes,
-       width = 29, height = 12, units = "cm", dpi = 600) # 2 panels
-
-## soil organics
-ggsave("analyses/plots/plots_soil_organics.jpeg", plot = plots_soil_organics,
-       width = 42, height = 15, units = "cm", dpi = 600) # 3 panels
-
-## soil inorganics
-ggsave("analyses/plots/plots_soil_inorganics.jpeg", plot = plots_soil_inorganics,
-       width = 45, height = 25, units = "cm") # 6 panels
-
-## soil characteristics
-ggsave("analyses/plots/plots_soil_characteristics.jpeg", plot = plots_soil_characteristics,
-       width = 42, height = 15, units = "cm", dpi = 600) # 3 panels
 
 
