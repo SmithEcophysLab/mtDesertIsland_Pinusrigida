@@ -54,7 +54,7 @@ This file contains topography, allometry, soil, and foliar data. The specific co
 
 ### /data/mdi_stand_density.csv
 This file contains stand density data. The specific column information is:
-- *site*: site name, corresponds to *Name* column in [mdi_all_clean.csv](https://github.com/SmithEcophysLab/mtDesertIsland_Pinusrigida/data/mdi_all_clean.csv)
+- *site*: site name, corresponds to *Name* column in [mtDesertIsland_data.csv](https://github.com/SmithEcophysLab/mtDesertIsland_Pinusrigida/blob/main/data/mtDesertIsland_data.csv)
 - *rep*: individual tree measured within site
 - *distance_1*: distance from individual tree to first nearest neighbor (m)
 - *distsnce_2*: distance from individual tree to second nearest neighbor (m)
