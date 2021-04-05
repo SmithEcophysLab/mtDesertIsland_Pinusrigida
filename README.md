@@ -8,7 +8,7 @@ This repository houses data and scripts from a study in Mount Desert Island, Mai
 Jeff Licht and Nick Smith (nick.gregory.smith@gmail.com)
 
 ## DOI badge
-[![DOI]()
+[![DOI](https://zenodo.org/badge/353805671.svg)](https://zenodo.org/badge/latestdoi/353805671)
 
 ## folder descriptions
 ### /data
