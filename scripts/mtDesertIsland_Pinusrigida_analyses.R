@@ -48,7 +48,7 @@ data <- read.csv('../data/mtDesertIsland_data.csv')
 data$CN_foliar <- data$C_foliar/data$N_foliar
 data$CN_soil <- data$C_soil/data$N_soil
 
-data_density <- read.csv('../data/mtDesertIsland_stand_density.csv')
+data_density <- read.csv('../data/mtDesertIsland_standdensity.csv')
 colnames(data_density)[1] <- "Name" #rename to match data
 
 ## assign fire history status to each site
@@ -141,15 +141,15 @@ watson.two.test(aspect_GOR, aspect_SCT) # 0.05 < P < 0.1
 watson.two.test(aspect_STS, aspect_SCT) # P < 0.001
 
 #### circular plots for each site
-plot_aspect_CADCLIFFS <- plot.circular(aspect_CADCLIFFS, main = 'Gorham Cliffs (a)', 
+plot_aspect_CADCLIFFS <- plot.circular(aspect_GOR, main = 'Gorham Cliffs (a)', 
                                       ylab = "Fire", 
                                       cex = 8, col = "red", pch = 16)
-plot_aspect_CAD <- plot.circular(aspect_CAD, main = 'South Cadillac (a)',
+plot_aspect_CAD <- plot.circular(aspect_SCT, main = 'South Cadillac (a)',
                                 cex = 8, col = "red", pch = 17)
-plot_aspect_WOND <- plot.circular(aspect_WOND, main = 'Wonderland (b)', 
+plot_aspect_WOND <- plot.circular(aspect_WON, main = 'Wonderland (b)', 
                                  ylab = "No Fire", xlab = "Low Elevation", 
                                  cex = 8, col = "blue", pch = 16)
-plot_aspect_STSAUV <- plot.circular(aspect_STSAUV, main = 'St. Sauveur (c)', 
+plot_aspect_STSAUV <- plot.circular(aspect_STS, main = 'St. Sauveur (c)', 
                                    xlab = "High Elevation", 
                                    cex = 8, col = "blue", pch = 17)
 
