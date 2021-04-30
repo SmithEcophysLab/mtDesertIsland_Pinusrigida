@@ -21,12 +21,14 @@ letters <- function(df = data, x = "Site", dfy, y){
   # get the highest point for each species
   max_y <- df %>% dplyr::group_by(!! .groupvar) %>% 
     dplyr::summarise(yaxis = max(!! .checkvar, na.rm = TRUE) + 0.05 * abs_max)
-    #"!!" unquotes the variable to allow for evaluation within dplyr
+  #"!!" unquotes the variable to allow for evaluation within dplyr
   # get Tukey HSD results
   hsd <- HSD.test(aov(as.formula(paste(y, x, sep = "~")), df), x, group = TRUE) 
   # add Tukey HSD results to dataframe containing graphing positions
-  max_y$group <- hsd$groups$groups
-  return(max_y)
+  group <- as.data.frame(hsd$groups)
+  group <- tibble::rownames_to_column(group, "Site")
+  letters <- dplyr::full_join(max_y, group, by = "Site")
+  return(letters)
 }
 
 # function to get pairwise letters from Tukey's HSD with a transformed y variable for boxplots
@@ -38,8 +40,10 @@ letters_adj <- function(df = data, x = "Site", dfy, y, adjy){
   max_y <- df %>% dplyr::group_by(!! .groupvar) %>% 
     dplyr::summarise(yaxis = max(!! .checkvar, na.rm = TRUE) + 0.05 * abs_max) 
   hsd <- HSD.test(aov(as.formula(paste(adjy, x, sep = "~")), df), x, group = TRUE) 
-  max_y$group <- hsd$groups$groups
-  return(max_y)
+  group <- as.data.frame(hsd$groups)
+  group <- tibble::rownames_to_column(group, "Site")
+  letters <- dplyr::full_join(max_y, group, by = "Site")
+  return(letters)
 }
 
 #### read in cleaned data ####
@@ -82,10 +86,6 @@ data_density$Site[data_density$Name == "CAD"] <- "SCT"
 data_density$Site[data_density$Name == "CADCLIFFS"] <- "GOR"
 data_density$Site[data_density$Name == "STSAUV"] <- "STS"
 data_density$Site[data_density$Name == "WOND"] <- "WON"
-
-## reorder levels of sites to match to increase from low to high elevation and no fire to fire
-data$Site <- factor(data$Site, levels = c("WON", "GOR", "STS", "SCT"))
-data_density$Site <- factor(data_density$Site, levels = c("WON", "GOR", "STS", "SCT"))
 
 ## create a generic variable set to pass to formula argument
 ind_variables <- c('elevation_fac', 'fire')
@@ -141,6 +141,17 @@ watson.two.test(aspect_GOR, aspect_SCT) # 0.05 < P < 0.1
 watson.two.test(aspect_STS, aspect_SCT) # P < 0.001
 
 #### circular plots for each site
+<<<<<<< HEAD
+plot_aspect_GOR <- plot.circular(aspect_GOR, main = 'Gorham Cliffs (a)', 
+                                      ylab = "Fire", 
+                                      cex = 3, col = "red", pch = 16)
+plot_aspect_SCT <- plot.circular(aspect_SCT, main = 'South Cadillac (a)',
+                                cex = 3, col = "red", pch = 17)
+plot_aspect_WON <- plot.circular(aspect_WON, main = 'Wonderland (b)', 
+                                 ylab = "No Fire", xlab = "Low Elevation", 
+                                 cex = 3, col = "blue", pch = 16)
+plot_aspect_STS <- plot.circular(aspect_STS, main = 'St. Sauveur (c)', 
+=======
 plot_aspect_CADCLIFFS <- plot.circular(aspect_GOR, main = 'Gorham Cliffs (a)', 
                                       ylab = "Fire", 
                                       cex = 8, col = "red", pch = 16)
@@ -150,8 +161,9 @@ plot_aspect_WOND <- plot.circular(aspect_WON, main = 'Wonderland (b)',
                                  ylab = "No Fire", xlab = "Low Elevation", 
                                  cex = 8, col = "blue", pch = 16)
 plot_aspect_STSAUV <- plot.circular(aspect_STS, main = 'St. Sauveur (c)', 
+>>>>>>> refs/remotes/origin/main
                                    xlab = "High Elevation", 
-                                   cex = 8, col = "blue", pch = 17)
+                                   cex = 3, col = "blue", pch = 17)
 
 ## allometry
 ### height
@@ -171,9 +183,9 @@ height_letters <- letters_adj(dfy = data$Height, y = "Height", adjy = "log(Heigh
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = height_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = height_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) +
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "Height (m)") +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -195,9 +207,9 @@ canopy_letters <- letters_adj(dfy = data$Canopy, y = "Canopy", adjy = "log(Canop
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = canopy_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = canopy_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "Canopy Spread (m)") +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -219,9 +231,9 @@ diam_letters <- letters_adj(dfy = data$Diam, y = "Diam", adjy = "log(Diam)")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = diam_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = diam_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "DBH (cm)") + 
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -241,9 +253,9 @@ density_letters <- letters(df = data_density, dfy = data_density$mean_distance, 
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = density_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = density_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) +
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "Stand Density (m)") + 
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -271,10 +283,10 @@ C_foliar_letters <- letters(dfy = data$C_foliar, y = "C_foliar")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = C_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = C_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    scale_y_continuous(name = "Foliar Carbon (%)") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Carbon (g g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -295,10 +307,10 @@ N_foliar_letters <- letters(dfy = data$N_foliar, y = "N_foliar")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = N_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = N_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    scale_y_continuous(name = "Foliar Nitrogen (%)") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Nitrogen (g g"^{-1}*")")) +
     # theme(legend.position = "bottom", legend.title = element_text(size = 16), 
     #       legend.text = element_text(size = 12)) +
     guides(color = guide_legend("Fire History")) +
@@ -321,9 +333,9 @@ CN_foliar_letters <- letters(dfy = data$CN_foliar, y = "CN_foliar")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = CN_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = CN_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "Foliar Carbon/Nitrogen") +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -351,10 +363,10 @@ Ca_foliar_letters <- letters(dfy = data$Ca_foliar, y = "Ca_foliar")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Ca_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Ca_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Foliar Calcium (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Calcium (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -375,10 +387,10 @@ P_foliar_letters <- letters_adj(dfy = data$P_foliar, y = "P_foliar", adjy = "log
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = P_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = P_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Foliar Phosphorus (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Phosphorus (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -399,10 +411,10 @@ K_foliar_letters <- letters_adj(dfy = data$K_foliar, y = "K_foliar", adjy = "log
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = K_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = K_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Foliar Potassium (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Potassium (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -423,10 +435,10 @@ Mg_foliar_letters <- letters(dfy = data$Mg_foliar, y = "Mg_foliar")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Mg_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Mg_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Foliar Magnesium (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Magnesium (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -447,10 +459,10 @@ Al_foliar_letters <- letters(dfy = data$Al_foliar, y = "Al_foliar")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Al_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Al_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Foliar Aluminum (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Aluminum (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -471,10 +483,10 @@ Zn_foliar_letters <- letters_adj(dfy = data$Zn_foliar, y = "Zn_foliar", adjy = "
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Zn_foliar_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Zn_foliar_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Foliar Zinc (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Foliar Zinc (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -498,7 +510,7 @@ d13C_abs_max <- max(data$d13C, na.rm = TRUE)
 d13C_letters <- data %>% group_by(Site) %>% 
   summarise(yaxis = max(d13C, na.rm = TRUE) - 0.02 * d13C_abs_max) # get the highest point for each species
 d13C_hsd <- HSD.test(aov(d13C ~ Site, data), "Site", group = TRUE) # get Tukey HSD results
-d13C_letters$group <- d13C_hsd$groups$groups
+d13C_letters$groups <- d13C_hsd$groups$groups
 
 (plot_d13C <- ggplot(data = data, aes(x = Site, y = d13C)) +
     geom_rect(data = NULL, aes(xmin = 0, xmax = 2.5, ymin = -Inf, ymax = Inf),
@@ -506,9 +518,9 @@ d13C_letters$group <- d13C_hsd$groups$groups
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = d13C_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = d13C_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     ylab(expression(delta^{"13"}*"C (‰)")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -530,9 +542,9 @@ d15N_letters <- letters(dfy = data$d15N, y = "d15N")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = d15N_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = d15N_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     ylab(expression(delta^{"15"}*"N (‰)")) + 
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -560,9 +572,9 @@ C_soil_letters <- letters(dfy = data$C_soil, y = "C_soil")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = C_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = C_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     ylab(expression("Soil Carbon (g g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -584,9 +596,9 @@ N_soil_letters <- letters(dfy = data$N_soil, y = "N_soil")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = N_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = N_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) +
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     ylab(expression("Soil Nitrogen (g g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -608,9 +620,9 @@ CN_soil_letters <- letters_adj(dfy = data$CN_soil, y = "CN_soil", adjy = "log(CN
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = CN_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = CN_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "Soil Carbon/Nitrogen") +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -638,10 +650,10 @@ Ca_soil_letters <- letters(dfy = data$Ca_soil, y = "Ca_soil")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Ca_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Ca_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Soil Calcium (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Soil Calcium (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -662,10 +674,10 @@ P_soil_letters <- letters_adj(dfy = data$P_soil, y = "P_soil", adjy = "log(P_soi
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = P_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = P_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Soil Phosphorus (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Soil Phosphorus (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -686,10 +698,10 @@ K_soil_letters <- letters(dfy = data$K_soil, y = "K_soil")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = K_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = K_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Soil Potassium (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Soil Potassium (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -710,10 +722,10 @@ Mg_soil_letters <- letters(dfy = data$Mg_soil, y = "Mg_soil")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Mg_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Mg_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Soil Magnesium (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Soil Magnesium (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -734,10 +746,10 @@ Al_soil_letters <- letters_adj(dfy = data$Al_soil, y = "Al_soil", adjy = "log(Al
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Al_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Al_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Soil Aluminum (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Soil Aluminum (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -758,10 +770,10 @@ Zn_soil_letters <- letters_adj(dfy = data$Zn_soil, y = "Zn_soil", adjy = "log(Zn
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = Zn_soil_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = Zn_soil_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
-    ylab(expression("Soil Zinc (g g"^{-1}*")")) +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
+    ylab(expression("Soil Zinc (mg g"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
 
@@ -789,9 +801,9 @@ pH_letters <- letters(dfy = data$pH, y = "pH")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = pH_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = pH_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "Soil pH") +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -813,9 +825,9 @@ CEC_letters <- letters(dfy = data$CEC, y = "CEC")
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = CEC_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = CEC_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     ylab(expression("Soil CEC (cmol"[c]*" kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -838,9 +850,9 @@ retention_letters <- letters_adj(dfy = data$Retention, y = "Retention", adjy = "
     geom_jitter(height = 0, aes(color = fire, shape = elevation_fac), size = 2) +
     scale_color_manual(values = c('red', 'blue')) +
     geom_boxplot(outlier.color = NA, fill = NA) +
-    geom_text(data = retention_letters, aes(y = yaxis, label = group)) +
+    geom_text(data = retention_letters, aes(y = yaxis, label = groups)) +
     theme_few(base_size = 16) + 
-    scale_x_discrete(name = "Site") +
+    scale_x_discrete(name = "Site", limits = c("WON", "GOR", "STS", "SCT")) +
     scale_y_continuous(name = "Soil Water Retention (%)") +
     guides(color = guide_legend("Fire History")) +
     guides(shape = guide_legend("Elevation")))
@@ -901,22 +913,4 @@ soil_inorganics <- cbind(as.matrix(anova(Ca_soil_lm)[, c(1, 4, 5)]),
 soil_characteristics <- cbind(as.matrix(anova(retention_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(pH_lm)[, c(4, 5)]), 
                 as.matrix(anova(CEC_lm)[, c(4, 5)]))
-
-(summary(emmeans(canopy_lm, ~elevation_fac))[1,2] - summary(emmeans(canopy_lm, ~elevation_fac))[2,2])/ summary(emmeans(canopy_lm, ~elevation_fac))[2,2]
-
-(summary(emmeans(P_foliar_lm, ~fire))[1,2] - summary(emmeans(P_foliar_lm, ~fire))[2,2])/ summary(emmeans(P_foliar_lm, ~fire))[2,2]
-(summary(emmeans(K_foliar_lm, ~fire))[1,2] - summary(emmeans(K_foliar_lm, ~fire))[2,2])/ summary(emmeans(K_foliar_lm, ~fire))[2,2]
-(summary(emmeans(Ca_foliar_lm, ~elevation_fac))[1,2] - summary(emmeans(Ca_foliar_lm, ~elevation_fac))[2,2])/ summary(emmeans(Ca_foliar_lm, ~elevation_fac))[2,2]
-(summary(emmeans(Zn_foliar_lm, ~elevation_fac))[1,2] - summary(emmeans(Zn_foliar_lm, ~elevation_fac))[2,2])/ summary(emmeans(Zn_foliar_lm, ~elevation_fac))[2,2]
-
-(summary(emmeans(d13C_lm, ~elevation_fac))[1,2] - summary(emmeans(d13C_lm, ~elevation_fac))[2,2])/ summary(emmeans(d13C_lm, ~elevation_fac))[2,2]
-
-(summary(emmeans(C_soil_lm, ~fire))[1,2] - summary(emmeans(C_soil_lm, ~fire))[2,2])/ summary(emmeans(C_soil_lm, ~fire))[2,2]
-(summary(emmeans(C_soil_lm, ~elevation_fac))[1,2] - summary(emmeans(C_soil_lm, ~elevation_fac))[2,2])/ summary(emmeans(C_soil_lm, ~elevation_fac))[2,2]
-(summary(emmeans(CN_soil_lm, ~elevation_fac))[1,2] - summary(emmeans(CN_soil_lm, ~elevation_fac))[2,2])/ summary(emmeans(CN_soil_lm, ~elevation_fac))[2,2]
-
-
-(summary(emmeans(K_soil_lm, ~fire))[1,2] - summary(emmeans(K_soil_lm, ~fire))[2,2])/ summary(emmeans(K_soil_lm, ~fire))[2,2]
-(summary(emmeans(Ca_soil_lm, ~elevation_fac))[1,2] - summary(emmeans(Ca_soil_lm, ~elevation_fac))[2,2])/ summary(emmeans(Ca_soil_lm, ~elevation_fac))[2,2]
-
 
