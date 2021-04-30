@@ -141,29 +141,17 @@ watson.two.test(aspect_GOR, aspect_SCT) # 0.05 < P < 0.1
 watson.two.test(aspect_STS, aspect_SCT) # P < 0.001
 
 #### circular plots for each site
-<<<<<<< HEAD
 plot_aspect_GOR <- plot.circular(aspect_GOR, main = 'Gorham Cliffs (a)', 
-                                      ylab = "Fire", 
-                                      cex = 3, col = "red", pch = 16)
+                                 ylab = "Fire", 
+                                 cex = 3, col = "red", pch = 16)
 plot_aspect_SCT <- plot.circular(aspect_SCT, main = 'South Cadillac (a)',
-                                cex = 3, col = "red", pch = 17)
+                                 cex = 3, col = "red", pch = 17)
 plot_aspect_WON <- plot.circular(aspect_WON, main = 'Wonderland (b)', 
                                  ylab = "No Fire", xlab = "Low Elevation", 
                                  cex = 3, col = "blue", pch = 16)
 plot_aspect_STS <- plot.circular(aspect_STS, main = 'St. Sauveur (c)', 
-=======
-plot_aspect_CADCLIFFS <- plot.circular(aspect_GOR, main = 'Gorham Cliffs (a)', 
-                                      ylab = "Fire", 
-                                      cex = 8, col = "red", pch = 16)
-plot_aspect_CAD <- plot.circular(aspect_SCT, main = 'South Cadillac (a)',
-                                cex = 8, col = "red", pch = 17)
-plot_aspect_WOND <- plot.circular(aspect_WON, main = 'Wonderland (b)', 
-                                 ylab = "No Fire", xlab = "Low Elevation", 
-                                 cex = 8, col = "blue", pch = 16)
-plot_aspect_STSAUV <- plot.circular(aspect_STS, main = 'St. Sauveur (c)', 
->>>>>>> refs/remotes/origin/main
-                                   xlab = "High Elevation", 
-                                   cex = 3, col = "blue", pch = 17)
+                                 xlab = "High Elevation", 
+                                 cex = 3, col = "blue", pch = 17)
 
 ## allometry
 ### height
@@ -869,20 +857,20 @@ retention_letters <- letters_adj(dfy = data$Retention, y = "Retention", adjy = "
 topography <- data %>% group_by(Site) %>% summarise_at(vars(Latitude, Longitude, Elevation, Slope, Aspect), mean, na.rm = TRUE)
 
 ### allometry
-#### create table with degrees of f reedom, f-value, p-value results from linear models
+#### create table with degrees of freedom, f-value, p-value results from linear models
 allometry <- cbind(as.matrix(anova(height_lm)[, c(1, 4, 5)]), 
                    as.matrix(anova(canopy_lm)[, c(1, 4, 5)]), 
                    as.matrix(anova(diam_lm)[, c(1, 4, 5)]),
                    as.matrix(anova(density_lm)[, c(1, 4, 5)]))
 
 ### foliar organics
-#### create table with degrees of f reedom, f-value, p-value results from linear models
+#### create table with degrees of freedom, f-value, p-value results from linear models
 foliar_cn <- cbind(as.matrix(anova(C_foliar_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(N_foliar_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(CN_foliar_lm)[, c(1, 4, 5)]))
 
 ### foliar inorganics
-#### create table with degrees of f reedom, f-value, p-value results from linear models
+#### create table with degrees of freedom, f-value, p-value results from linear models
 foliar_inorganics <- cbind(as.matrix(anova(Ca_foliar_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(P_foliar_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(K_foliar_lm)[, c(1, 4, 5)]),
@@ -891,12 +879,12 @@ foliar_inorganics <- cbind(as.matrix(anova(Ca_foliar_lm)[, c(1, 4, 5)]),
                 as.matrix(anova(Zn_foliar_lm)[, c(1, 4, 5)]))
 
 ### foliar isotopes
-#### create table with degrees of f reedom, f-value, p-value results from linear models
+#### create table with degrees of freedom, f-value, p-value results from linear models
 foliar_isotopes <- cbind(as.matrix(anova(d13C_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(d15N_lm)[, c(4, 5)]))
 
 ### soil organics
-#### create table with degrees of f reedom, f-value, p-value results from linear models
+#### create table with degrees of freedom, f-value, p-value results from linear models
 soil_organics <- cbind(as.matrix(anova(C_soil_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(N_soil_lm)[, c(1, 4, 5)]), 
                 as.matrix(anova(CN_soil_lm)[, c(1, 4, 5)]))
