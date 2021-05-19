@@ -5,7 +5,7 @@ Data and scripts corresponding to Pinus rigida study from Mount Desert Island, M
 This repository houses data and scripts from a study in Mount Desert Island, Maine, USA examining Pinus rigida traits in high vs. low elevation and fire vs no fire history. 
 
 ## authors
-Jeff Licht and Nick Smith (nick.gregory.smith@gmail.com)
+Jeff Licht, Risa McNellis, and Nick Smith (nick.gregory.smith@gmail.com)
 
 ## DOI badge
 [![DOI](https://zenodo.org/badge/353805671.svg)](https://zenodo.org/badge/latestdoi/353805671)
