@@ -24,7 +24,7 @@ This file contains topography, allometry, soil, and foliar data. The specific co
 - *Name*: site name
 - *Longitude*: longitude (decimal degrees) at individual tree
 - *Latitude*: latitude (decimal degrees) at individual tree
-- *Elevation*: elevation (feet) at individual tree
+- *Elevation*: elevation (m) at individual tree
 - *Slope*: slope at individual tree measured using ArcGIS 
 - *Aspect*: aspect at individual tree measured using ArcGIS
 - *Height*: tree height measured with nested, 2 m calibrated, aluminum rods (m)
