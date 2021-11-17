@@ -11,17 +11,13 @@ library(ggthemes)
 library(agricolae)
 library(patchwork)
 library(car)
+library(equatiomatic)
 
 #### read in cleaned data ####
 
-data <- read.csv('../data/mtDesertIsland_data.csv')
+data <- read.csv('../data/mdi_all_clean.csv')
 data$CN_foliar <- data$C_foliar/data$N_foliar
 data$CN_soil <- data$C_soil/data$N_soil
-
-data_density <- read.csv('../data/mtDesertIsland_stand_density.csv')
-
-# add density data to all data
-data <- left_join(data, data_density, by = "ID")
 
 ## assign fire history status to each site
 data$Fire[data$Name == 'CAD'] <- 'fire' 
@@ -43,22 +39,21 @@ data$Site[data$Name == "STSAUV"] <- "STS"
 data$Site[data$Name == "WOND"] <- "WON"
 
 ### make fire and no fire subset for plotting trendlines
-### note: omitting the very high elevation as these plots don't matter
-data_fire = subset(data, Fire == 'fire' & Elevation < 300)
-data_nofire = subset(data, Fire == 'no fire' & Elevation < 300)
+data_fire = subset(data, Fire == 'fire')
+data_nofire = subset(data, Fire == 'no fire')
 
-data_plot_trend = subset(data, Elevation < 300)
+data_plot_trend = data
 
 #### fit models and explore results ####
 
 ### aspect
 #### turn aspect data into circular data that maps onto a compass
 aspect_SCT <- circular(data$Aspect[data$Name == 'CAD'],
-                      units = "degrees", template = "geographics")
+                       units = "degrees", template = "geographics")
 aspect_GOR <- circular(data$Aspect[data$Name == 'CADCLIFFS'],
-                            units = "degrees", template = "geographics")
+                       units = "degrees", template = "geographics")
 aspect_STS <- circular(data$Aspect[data$Name == 'STSAUV'],
-                         units = "degrees", template = "geographics")
+                       units = "degrees", template = "geographics")
 aspect_WON <- circular(data$Aspect[data$Name == 'WOND'],
                        units = "degrees", template = "geographics")
 
@@ -72,29 +67,57 @@ watson.two.test(aspect_GOR, aspect_SCT) # 0.05 < P < 0.1
 watson.two.test(aspect_STS, aspect_SCT) # P < 0.001
 
 #### circular plots for each site
+jpeg(filename = "plots/plots_aspect.jpeg", width = 3000, 
+     height = 3000, units = 'px')
+par(mfrow = c(2, 2), cex.lab = 6, cex.main = 6, mar = c(5.5, 8.5, 5.5, 2.5))
 plot_aspect_GOR <- plot.circular(aspect_GOR, main = 'Gorham Cliffs (a)', 
-                                      ylab = "Exposure to 1947 fire", 
-                                      cex = 8, col = "red", pch = 8, lwd = 8)
+                                 ylab = "Exposure to 1947 fire", 
+                                 cex = 8, col = "red", pch = 8, lwd = 8)
 plot_aspect_SCT <- plot.circular(aspect_SCT, main = 'South Cadillac (a)',
-                                cex = 8, col = "red", pch = 17)
+                                 cex = 8, col = "red", pch = 17)
 plot_aspect_WON <- plot.circular(aspect_WON, main = 'Wonderland (b)', 
                                  ylab = "No exposure to 1947 fire", xlab = "Low Elevation", 
                                  cex = 8, col = "blue", pch = 15)
 plot_aspect_STS <- plot.circular(aspect_STS, main = 'St. Sauveur (c)', 
-                                   xlab = "High Elevation", 
-                                   cex = 8, col = "blue", pch = 18)
+                                 xlab = "High Elevation", 
+                                 cex = 8, col = "blue", pch = 18)
+dev.off()
 
 ## slope
 slope_lm <- lm(Slope ~ Elevation * Fire, data = data)
 # plot(resid(slope_lm) ~ fitted(slope_lm))
 Anova(slope_lm)
 
+# slope_f_slope <- summary(emtrends(slope_lm, ~ Fire, var = "Elevation"))[1, 2] 
+# slope_f_intercept <- summary(emmeans(slope_lm, ~ Fire, at = list(Elevation = 0)))[1, 2] 
+# slope_f_seq <- seq(min(data$Elevation, na.rm = T), max(data$Elevation, na.rm = T), 0.01)
+# slope_f_trend <- slope_f_intercept + slope_f_seq * slope_f_slope
+# slope_f_trend <- as.data.frame(cbind(slope_f_seq, slope_f_trend))
+# 
+# slope_nf_slope <- summary(emtrends(slope_lm, ~ Fire, var = "Elevation"))[2, 2] 
+# slope_nf_intercept <- summary(emmeans(slope_lm, ~ Fire, at = list(Elevation = 0)))[2, 2] 
+# slope_nf_seq <- seq(min(data$Elevation, na.rm = T), max(data$Elevation, na.rm = T), 0.01)
+# slope_nf_trend <- slope_nf_intercept + slope_nf_seq * slope_nf_slope
+# slope_nf_trend <- as.data.frame(cbind(slope_nf_seq, slope_nf_trend))
+# 
+# (plot_slope <- ggplot(data = data, aes(x = Elevation, y = Slope)) +
+#         geom_jitter(aes(color = Fire), size = 2) +
+#         scale_color_manual(values = c('red', 'blue')) +
+#         geom_line(data = slope_f_trend, aes(x = slope_f_seq, y = slope_f_trend), 
+#                   col = 'red', lwd = 2, alpha = 0.8) +
+#         geom_line(data = slope_nf_trend, aes(x = slope_nf_seq, y = slope_nf_trend), 
+#                   col = 'blue', lwd = 2, alpha = 0.8) +
+#         theme_few(base_size = 16) + 
+#         scale_x_continuous(name = "Elevation (m)", limits = c(0, 1500)) +
+#         scale_y_continuous(name = "Slope (◦)") +
+#         guides(color = guide_legend("Fire History")))
+
 ## allometry
 ### height
 height_lm <- lm(log(Height) ~ Elevation * Fire, data = data)
 # plot(resid(height_lm) ~ fitted(height_lm))
 Anova(height_lm)
-summary(height_lm) # N = 40
+summary(height_lm)
 
 height_f_slope <- summary(emtrends(height_lm, ~ Fire, var = "Elevation"))[1, 2] 
 height_f_intercept <- summary(emmeans(height_lm, ~ Fire, at = list(Elevation = 0)))[1, 2] 
@@ -119,8 +142,8 @@ height_nf_trend <- as.data.frame(cbind(height_nf_seq, height_nf_trend))
     geom_line(data = height_nf_trend, aes(x = height_nf_seq, y = height_nf_trend), 
               col = 'blue', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-    scale_y_continuous(name = "Height (m)") +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    scale_y_continuous(name = "Height (cm)") +
     guides(color = guide_legend("Fire History")))
 
 ### canopy
@@ -143,8 +166,8 @@ canopy_trend <- as.data.frame(cbind(canopy_seq, canopy_trend))
     geom_line(data = canopy_trend, aes(x = canopy_seq, y = canopy_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-    scale_y_continuous(name = "Canopy Spread (m)") +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    scale_y_continuous(name = "Canopy Spread (cm)") +
     guides(color = guide_legend("Fire History")))
 
 ### diam
@@ -152,50 +175,35 @@ diam_lm <- lm(log(Diam) ~ Elevation * Fire , data = data)
 #plot(resid(diam_lm) ~ fitted(diam_lm))
 Anova(diam_lm)
 
-diam_slope <- summary(emtrends(diam_lm, ~ Elevation, var = "Elevation"))[1, 2] 
-diam_intercept <- summary(emmeans(diam_lm, ~ Elevation, at = list(Elevation = 0)))[1, 2] 
-diam_seq <- seq(min(data_plot_trend$Elevation, na.rm = T), max(data_plot_trend$Elevation, na.rm = T), 0.01)
-diam_trend <- exp(diam_intercept + diam_seq * diam_slope)
-diam_trend <- as.data.frame(cbind(diam_seq, diam_trend))
+diam_f_slope <- summary(emtrends(diam_lm, ~ Fire, var = "Elevation"))[1, 2] 
+diam_f_intercept <- summary(emmeans(diam_lm, ~ Fire, at = list(Elevation = 0)))[1, 2] 
+diam_f_seq <- seq(min(data_fire$Elevation, na.rm = T), max(data_fire$Elevation, na.rm = T), 0.01)
+diam_f_trend <- exp(diam_f_intercept + diam_f_seq * diam_f_slope)
+diam_f_trend <- as.data.frame(cbind(diam_f_seq, diam_f_trend))
 
-(plot_diam <- ggplot(data = data, aes(x = Elevation, y = (Diam))) +
+diam_nf_slope <- summary(emtrends(diam_lm, ~ Fire, var = "Elevation"))[2, 2] 
+diam_nf_intercept <- summary(emmeans(diam_lm, ~ Fire, at = list(Elevation = 0)))[2, 2] 
+diam_nf_seq <- seq(min(data_nofire$Elevation, na.rm = T), max(data_nofire$Elevation, na.rm = T), 0.01)
+diam_nf_trend <- exp(diam_nf_intercept + diam_nf_seq * diam_nf_slope)
+diam_nf_trend <- as.data.frame(cbind(diam_nf_seq, diam_nf_trend))
+
+(plot_diam <- ggplot(data = data, aes(x = Elevation, y = Diam)) +
     geom_jitter(aes(shape = Site, color = Fire), size = 2) +
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-    geom_line(data = diam_trend, aes(x = diam_seq, y = diam_trend), 
-              col = 'black', lwd = 2, alpha = 0.8) +
+    geom_line(data = diam_f_trend, aes(x = diam_f_seq, y = diam_f_trend), 
+              col = 'red', lwd = 2, alpha = 0.8) +
+    geom_line(data = diam_nf_trend, aes(x = diam_nf_seq, y = diam_nf_trend), 
+              col = 'blue', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     scale_y_continuous(name = "DBH (cm)") +
     guides(color = guide_legend("Fire History")))
 
-### density
-density_lm <- lm(mean_distance ~ Elevation * Fire , data = data)
-#plot(resid(density_lm) ~ fitted(density_lm))
-Anova(density_lm)
 
-density_slope <- summary(emtrends(density_lm, ~ Fire, var = "Elevation"))[1, 2] 
-density_intercept <- summary(emmeans(density_lm, ~ Fire, at = list(Elevation = 0)))[1, 2] 
-density_seq <- seq(min(data$Elevation, na.rm = T), max(data$Elevation, na.rm = T), 0.01)
-density_trend <- density_intercept + density_seq * density_slope
-density_trend <- as.data.frame(cbind(density_seq, density_trend))
-
-(plot_density <- ggplot(data = data, aes(x = Elevation, y = mean_distance)) +
-    geom_jitter(aes(shape = Site, color = Fire), size = 2) +
-    scale_color_manual(values = c('red', 'blue'),
-                       labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
-    scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
-    geom_line(data = density_trend, aes(x = density_seq, y = density_trend), 
-              col = 'black', lwd = 2, alpha = 0.8) +
-    theme_few(base_size = 16) +
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
-    scale_y_continuous(name = "Distance Between Neighbors (m)", limits = c(0, 6)) + 
-    guides(color = guide_legend("Fire History")))
-
-(plots_allometry <- plot_canopy + plot_diam + plot_density + plot_height + 
+(plots_allometry <- plot_canopy + plot_diam + plot_height + 
     plot_layout(guides = 'collect') +
     plot_annotation(tag_levels = 'A') & 
     theme(plot.tag = element_text(size = 16)))
@@ -221,7 +229,7 @@ d13C_trend <- as.data.frame(cbind(d13C_seq, d13C_trend))
     geom_line(data = d13C_trend, aes(x = d13C_seq, y = d13C_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression(delta^{"13"}*"C (‰)")) +
     guides(color = guide_legend("Fire History")))
 
@@ -236,10 +244,10 @@ Anova(d15N_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-        ylab(expression(delta^{"15"}*"N (‰)")) +
-        guides(color = guide_legend("Fire History")))
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression(delta^{"15"}*"N (‰)")) +
+    guides(color = guide_legend("Fire History")))
 
 ## foliar organics
 ### C_foliar
@@ -253,10 +261,10 @@ Anova(C_foliar_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
-        ylab(expression("Foliar C (%)")) +
-        guides(color = guide_legend("Fire History")))
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression("Foliar C (%)")) +
+    guides(color = guide_legend("Fire History")))
 
 ### N_foliar
 N_foliar_lm <- lm(N_foliar ~ Elevation * Fire , data = data)
@@ -269,10 +277,10 @@ Anova(N_foliar_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
-        ylab(expression("Foliar N (%)")) +
-        guides(color = guide_legend("Fire History")))
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression("Foliar N (%)")) +
+    guides(color = guide_legend("Fire History")))
 
 ### CN_foliar
 CN_foliar_lm <- lm(CN_foliar ~ Elevation * Fire , data = data)
@@ -285,10 +293,10 @@ Anova(CN_foliar_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
-        ylab("Foliar C/N") +
-        guides(color = guide_legend("Fire History")))
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab("Foliar C/N") +
+    guides(color = guide_legend("Fire History")))
 
 ## foliar inorganics
 ### Ca_foliar
@@ -311,7 +319,7 @@ Ca_foliar_trend <- as.data.frame(cbind(Ca_foliar_seq, Ca_foliar_trend))
     geom_line(data = Ca_foliar_trend, aes(x = Ca_foliar_seq, y = Ca_foliar_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Foliar Ca" ^ "2+ " * "(mg kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")))
 
@@ -326,11 +334,11 @@ Anova(P_foliar_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylim(c(0, 5000)) +
-        ylab(expression("Foliar P (mg kg"^{-1}*")")) +
-        guides(color = guide_legend("Fire History")))
+    ylab(expression("Foliar P (mg kg"^{-1}*")")) +
+    guides(color = guide_legend("Fire History")))
 
 ### K_foliar
 K_foliar_lm <- lm(log(K_foliar) ~ Elevation * Fire , data = data)
@@ -343,8 +351,12 @@ Anova(K_foliar_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
+    # geom_line(data = K_foliar_f_trend, aes(x = K_foliar_f_seq, y = K_foliar_f_trend), 
+    #           col = 'red', lwd = 2, alpha = 0.8) +
+    # geom_line(data = K_foliar_nf_trend, aes(x = K_foliar_nf_seq, y = K_foliar_nf_trend), 
+    #           col = 'blue', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylim(c(0, 7000)) +
     ylab(expression("Foliar K" ^ "+ " * "(mg kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")))
@@ -360,10 +372,10 @@ Anova(Mg_foliar_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-        ylab(expression("Foliar Mg" ^ "2+ " * "(mg kg"^{-1}*")")) +
-        guides(color = guide_legend("Fire History")))
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression("Foliar Mg" ^ "2+ " * "(mg kg"^{-1}*")")) +
+    guides(color = guide_legend("Fire History")))
 
 ### Al_foliar
 Al_foliar_lm <- lm(Al_foliar ~ Elevation * Fire , data = data)
@@ -376,10 +388,10 @@ Anova(Al_foliar_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-        ylab(expression("Foliar Al" ^ "+" * "(mg kg"^{-1}*")")) +
-        guides(color = guide_legend("Fire History")))
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression("Foliar Al" ^ "+" * "(mg kg"^{-1}*")")) +
+    guides(color = guide_legend("Fire History")))
 
 ### Zn_foliar
 Zn_foliar_lm <- lm(log(Zn_foliar) ~ Elevation * Fire , data = data)
@@ -398,12 +410,12 @@ Zn_foliar_trend <- as.data.frame(cbind(Zn_foliar_seq, Zn_foliar_trend))
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        geom_line(data = Zn_foliar_trend, aes(x = Zn_foliar_seq, y = Zn_foliar_trend), 
-                  col = 'black', lwd = 2, alpha = 0.8) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-        ylab(expression("Foliar Zn (mg kg"^{-1}*")")) +
-        guides(color = guide_legend("Fire History")))
+    geom_line(data = Zn_foliar_trend, aes(x = Zn_foliar_seq, y = Zn_foliar_trend), 
+              col = 'black', lwd = 2, alpha = 0.8) +
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression("Foliar Zn (mg kg"^{-1}*")")) +
+    guides(color = guide_legend("Fire History")))
 
 (plots_foliar_organic <- (plot_d13C + plot_d15N) / (plot_C_foliar + plot_N_foliar + plot_CN_foliar) + 
     plot_layout(guides = 'collect') +
@@ -411,10 +423,10 @@ Zn_foliar_trend <- as.data.frame(cbind(Zn_foliar_seq, Zn_foliar_trend))
     theme(plot.tag = element_text(size = 16)))
 
 (plots_foliar_inorganic <- plot_Al_foliar + plot_Ca_foliar + plot_K_foliar + plot_Mg_foliar +
-        plot_P_foliar + plot_Zn_foliar + 
-        plot_layout(guides = 'collect') +
-        plot_annotation(tag_levels = 'A') & 
-        theme(plot.tag = element_text(size = 16)))
+    plot_P_foliar + plot_Zn_foliar + 
+    plot_layout(guides = 'collect') +
+    plot_annotation(tag_levels = 'A') & 
+    theme(plot.tag = element_text(size = 16)))
 
 ## soil organics
 ### C_soil
@@ -437,7 +449,7 @@ C_soil_trend <- as.data.frame(cbind(C_soil_seq, C_soil_trend))
     geom_line(data = C_soil_trend, aes(x = C_soil_seq, y = C_soil_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Soil C (%)")) +
     guides(color = guide_legend("Fire History")))
 
@@ -452,10 +464,10 @@ Anova(N_soil_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-        ylab(expression("Soil N (%)")) +
-        guides(color = guide_legend("Fire History")))
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression("Soil N (%)")) +
+    guides(color = guide_legend("Fire History")))
 
 ### CN_soil
 CN_soil_lm <- lm(log(CN_soil) ~ Elevation * Fire , data = data)
@@ -468,8 +480,10 @@ Anova(CN_soil_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
+    # geom_line(data = CN_soil_trend, aes(x = CN_soil_seq, y = CN_soil_trend), 
+    #           col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab("Soil C/N") +
     guides(color = guide_legend("Fire History")))
 
@@ -494,7 +508,7 @@ Ca_soil_trend <- as.data.frame(cbind(Ca_soil_seq, Ca_soil_trend))
     geom_line(data = Ca_soil_trend, aes(x = Ca_soil_seq, y = Ca_soil_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylim(c(0, 2000)) +
     ylab(expression("Soil Ca" ^ "2+ " * "(mg kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")))
@@ -510,8 +524,10 @@ Anova(P_soil_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
+    # geom_line(data = P_soil_trend, aes(x = P_soil_seq, y = P_soil_trend), 
+    #           col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Soil P (mg kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")))
 
@@ -526,8 +542,10 @@ Anova(K_soil_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
+    # geom_line(data = K_soil_trend, aes(x = K_soil_seq, y = K_soil_trend), 
+    #           col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylim(c(0, 700)) +
     ylab(expression("Soil K" ^"+ " * "(mg kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")))
@@ -543,10 +561,12 @@ Anova(Mg_soil_lm)
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-        ylab(expression("Soil Mg" ^ "2+ " * "(mg kg"^{-1}*")")) +
-        guides(color = guide_legend("Fire History")))
+    # geom_line(data = Mg_soil_trend, aes(x = Mg_soil_seq, y = Mg_soil_trend), 
+    #           col = 'black', lwd = 2, alpha = 0.8) +
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab(expression("Soil Mg" ^ "2+ " * "(mg kg"^{-1}*")")) +
+    guides(color = guide_legend("Fire History")))
 
 ### Al_soil
 Al_soil_lm <- lm(log(Al_soil) ~ Elevation * Fire , data = data)
@@ -576,7 +596,7 @@ Al_soil_nf_trend <- as.data.frame(cbind(Al_soil_nf_seq, Al_soil_nf_trend))
     geom_line(data = Al_soil_nf_trend, aes(x = Al_soil_nf_seq, y = Al_soil_nf_trend), 
               col = 'blue', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Soil Al" ^ "+ " * "(mg kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")))
 
@@ -592,7 +612,7 @@ Anova(Zn_soil_lm)
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
     theme_few(base_size = 16) + 
-    scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Soil Zn (mg kg"^{-1}*")")) +
     guides(color = guide_legend("Fire History")))
 
@@ -619,14 +639,14 @@ retention_nf_trend <- as.data.frame(cbind(retention_nf_seq, retention_nf_trend))
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
                        labels = c('GOR', 'SCT', 'WON', 'STS')) +
-        geom_line(data = retention_f_trend, aes(x = retention_f_seq, y = retention_f_trend), 
-                  col = 'red', lwd = 2, alpha = 0.8) +
-        geom_line(data = retention_nf_trend, aes(x = retention_nf_seq, y = retention_nf_trend), 
-                  col = 'blue', lwd = 2, alpha = 0.8) +
-        theme_few(base_size = 16) + 
-        scale_x_continuous(name = "Elevation (m)", limits = c(0, 300)) +
-        ylab("Soil Water Retention (%)") +
-        guides(color = guide_legend("Fire History")))
+    geom_line(data = retention_f_trend, aes(x = retention_f_seq, y = retention_f_trend), 
+              col = 'red', lwd = 2, alpha = 0.8) +
+    geom_line(data = retention_nf_trend, aes(x = retention_nf_seq, y = retention_nf_trend), 
+              col = 'blue', lwd = 2, alpha = 0.8) +
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    ylab("Soil Water Retention (SWR; %)") +
+    guides(color = guide_legend("Fire History")))
 
 (plots_soil_organics <- plot_C_soil + plot_N_soil + plot_CN_soil + plot_retention +
     plot_layout(guides = "collect") +
@@ -638,3 +658,77 @@ retention_nf_trend <- as.data.frame(cbind(retention_nf_seq, retention_nf_trend))
     plot_annotation(tag_levels = 'A') & 
     theme(plot.tag = element_text(size = 16)))
 
+
+#### tables and posthoc ####
+
+### topography
+#### create table with mean latitude, longitude, elevation, slope, and aspect for each site
+topography <- data %>% group_by(Site) %>% summarise_at(vars(Latitude, Longitude, Elevation, Slope, Aspect), mean, na.rm = TRUE)
+# write.csv(topography, "tables/topography.csv")
+
+### allometry
+#### create table with degrees of f reedom, f-value, p-value results from linear models
+write.csv(cbind(as.matrix(as.data.frame(Anova(canopy_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(diam_lm))[, c(2:4)]),
+                # as.matrix(as.data.frame(Anova(density_lm))[, c(2:4)]),
+                # as.matrix(as.data.frame(Anova(slope_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(height_lm))[, c(2:4)])),
+          'tables/allometry.csv')
+
+### foliar organics
+#### create table with degrees of f reedom, f-value, p-value results from linear models
+write.csv(cbind(as.matrix(as.data.frame(Anova(d13C_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(d15N_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(C_foliar_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(N_foliar_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(CN_foliar_lm))[, c(2:4)])),
+          'tables/foliar_organics.csv')
+
+### foliar inorganics
+#### create table with degrees of f reedom, f-value, p-value results from linear models
+write.csv(cbind(as.matrix(as.data.frame(Anova(Al_foliar_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(Ca_foliar_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(K_foliar_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(Mg_foliar_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(P_foliar_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(Zn_foliar_lm))[, c(2:4)])),
+          'tables/foliar_inorganics.csv')
+
+### soil organics
+#### create table with degrees of f reedom, f-value, p-value results from linear models
+write.csv(cbind(as.matrix(as.data.frame(Anova(C_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(N_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(CN_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(retention_lm))[, c(2:4)])),
+          'tables/soil_organics.csv')
+
+### soil inorganics
+write.csv(cbind(as.matrix(as.data.frame(Anova(Al_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(Ca_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(K_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(Mg_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(P_soil_lm))[, c(2:4)]),
+                as.matrix(as.data.frame(Anova(Zn_soil_lm))[, c(2:4)])),
+          'tables/soil_inorganics.csv')
+
+#### save graphs ####
+
+## slope
+# ggsave("plots/plot_slope.jpeg", plot = plot_slope,
+#        width = 28, height = 18, units = "cm", dpi = 600) # 1 panel
+
+## allometry
+ggsave("plots/plots_allometry.jpeg", plot = plots_allometry,
+       width = 45, height = 18, units = "cm", dpi = 600) # 4 panels
+
+## foliar nutrients
+ggsave("plots/plots_foliar_organics.jpeg", plot = plots_foliar_organic,
+       width = 45, height = 25, units = "cm", dpi = 600) # 5 panels
+ggsave("plots/plots_foliar_inorganics.jpeg", plot = plots_foliar_inorganic,
+       width = 45, height = 25, units = "cm", dpi = 600) # 6 panels
+
+## soil nutrients
+ggsave("plots/plots_soil_organics.jpeg", plot = plots_soil_organics,
+       width = 42, height = 25, units = "cm", dpi = 600) # 4 panels
+ggsave("plots/plots_soil_inorganics.jpeg", plot = plots_soil_inorganics,
+       width = 42, height = 25, units = "cm", dpi = 600) # 6 panels
