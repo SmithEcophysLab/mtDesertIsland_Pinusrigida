@@ -27,7 +27,9 @@ This file contains topography, allometry, soil, and foliar data. The specific co
 - *Elevation*: elevation (m) at individual tree
 - *Slope*: slope at individual tree measured using ArcGIS 
 - *Aspect*: aspect at individual tree measured using ArcGIS
-- *Height*: tree height measured with nested, 2 m calibrated, aluminum rods (m)
+- *Year*: Year data were taken
+- *Height*: tree height measured with nested, 2 m calibrated, aluminum rods (cm)
+- *BA*: tree basal area (ft<sup>2</sup>)
 - *Canopy*: canopy spread measured with nested, 2 m calibrated, aluminum rods (m)
 - *Diam*: diameter at breast height measured with a ProSkit electronic digital caliper (cm)
 - *d13C*: foliar carbon-13 isotope measured with a Thermo Delta V+ IR-MS continuous flow isotope ratio mass spectrometer (‰)

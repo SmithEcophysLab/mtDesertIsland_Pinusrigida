@@ -15,7 +15,7 @@ library(equatiomatic)
 
 #### read in cleaned data ####
 
-data <- read.csv('../data/mdi_all_clean.csv')
+data <- read.csv('../data/mtDesertIsland_data.csv')
 data$CN_foliar <- data$C_foliar/data$N_foliar
 data$CN_soil <- data$C_soil/data$N_soil
 
@@ -43,6 +43,12 @@ data_fire = subset(data, Fire == 'fire')
 data_nofire = subset(data, Fire == 'no fire')
 
 data_plot_trend = data
+
+#### correlation matrix ####
+colnames(data)
+data_4cor <- data[,c(5, 6, 9:10, 12:35)]
+data.cor <- cor(data_4cor, use="pairwise.complete.obs")
+cor_plot <- corrplot(data.cor)
 
 #### fit models and explore results ####
 
@@ -113,6 +119,39 @@ Anova(slope_lm)
 #         guides(color = guide_legend("Fire History")))
 
 ## allometry
+### height
+BA_lm <- lm(log(BA) ~ Elevation * Fire, data = data)
+# plot(resid(BA_lm) ~ fitted(BA_lm))
+Anova(BA_lm)
+summary(BA_lm)
+
+BA_f_slope <- summary(emtrends(BA_lm, ~ Fire, var = "Elevation"))[1, 2] 
+BA_f_intercept <- summary(emmeans(BA_lm, ~ Fire, at = list(Elevation = 0)))[1, 2] 
+BA_f_seq <- seq(min(data_fire$Elevation, na.rm = T), max(data_fire$Elevation, na.rm = T), 0.01)
+BA_f_trend <- exp(BA_f_intercept + BA_f_seq * BA_f_slope)
+BA_f_trend <- as.data.frame(cbind(BA_f_seq, BA_f_trend))
+
+BA_nf_slope <- summary(emtrends(BA_lm, ~ Fire, var = "Elevation"))[2, 2] 
+BA_nf_intercept <- summary(emmeans(BA_lm, ~ Fire, at = list(Elevation = 0)))[2, 2] 
+BA_nf_seq <- seq(min(data_nofire$Elevation, na.rm = T), max(data_nofire$Elevation, na.rm = T), 0.01)
+BA_nf_trend <- exp(BA_nf_intercept + BA_nf_seq * BA_nf_slope)
+BA_nf_trend <- as.data.frame(cbind(BA_nf_seq, BA_nf_trend))
+
+(plot_BA <- ggplot(data = data, aes(x = Elevation, y = BA)) +
+    geom_jitter(aes(shape = Site, color = Fire), size = 2) +
+    scale_color_manual(values = c('red', 'blue'),
+                       labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
+    scale_shape_manual(values = c(8, 17, 18, 15), 
+                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+    geom_line(data = BA_f_trend, aes(x = BA_f_seq, y = BA_f_trend), 
+              col = 'red', lwd = 2, alpha = 0.8) +
+    geom_line(data = BA_nf_trend, aes(x = BA_nf_seq, y = BA_nf_trend), 
+              col = 'blue', lwd = 2, alpha = 0.8) +
+    theme_few(base_size = 16) + 
+    scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
+    scale_y_continuous(name = "BA (ft2)") +
+    guides(color = guide_legend("Fire History")))
+
 ### height
 height_lm <- lm(log(Height) ~ Elevation * Fire, data = data)
 # plot(resid(height_lm) ~ fitted(height_lm))
