@@ -12,6 +12,7 @@ library(agricolae)
 library(patchwork)
 library(car)
 library(equatiomatic)
+library(corrplot)
 
 #### read in cleaned data ####
 
@@ -35,7 +36,7 @@ data$Elevation_fac <- factor(data$Elevation_fac, levels = c("low", "high"))
 ## rename site labels to match manuscript
 data$Site[data$Name == "CAD"] <- "SCT"
 data$Site[data$Name == "CADCLIFFS"] <- "GOR"
-data$Site[data$Name == "STSAUV"] <- "STS"
+data$Site[data$Name == "STSAUV"] <- "SST"
 data$Site[data$Name == "WOND"] <- "WON"
 
 ### make fire and no fire subset for plotting trendlines
@@ -142,7 +143,7 @@ BA_nf_trend <- as.data.frame(cbind(BA_nf_seq, BA_nf_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = BA_f_trend, aes(x = BA_f_seq, y = BA_f_trend), 
               col = 'red', lwd = 2, alpha = 0.8) +
     geom_line(data = BA_nf_trend, aes(x = BA_nf_seq, y = BA_nf_trend), 
@@ -175,7 +176,7 @@ height_nf_trend <- as.data.frame(cbind(height_nf_seq, height_nf_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = height_f_trend, aes(x = height_f_seq, y = height_f_trend), 
               col = 'red', lwd = 2, alpha = 0.8) +
     geom_line(data = height_nf_trend, aes(x = height_nf_seq, y = height_nf_trend), 
@@ -201,7 +202,7 @@ canopy_trend <- as.data.frame(cbind(canopy_seq, canopy_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = canopy_trend, aes(x = canopy_seq, y = canopy_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -231,7 +232,7 @@ diam_nf_trend <- as.data.frame(cbind(diam_nf_seq, diam_nf_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = diam_f_trend, aes(x = diam_f_seq, y = diam_f_trend), 
               col = 'red', lwd = 2, alpha = 0.8) +
     geom_line(data = diam_nf_trend, aes(x = diam_nf_seq, y = diam_nf_trend), 
@@ -264,7 +265,7 @@ d13C_trend <- as.data.frame(cbind(d13C_seq, d13C_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = d13C_trend, aes(x = d13C_seq, y = d13C_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -282,7 +283,7 @@ Anova(d15N_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression(delta^{"15"}*"N (‰)")) +
@@ -299,7 +300,7 @@ Anova(C_foliar_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Foliar C (%)")) +
@@ -315,7 +316,7 @@ Anova(N_foliar_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Foliar N (%)")) +
@@ -331,7 +332,7 @@ Anova(CN_foliar_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab("Foliar C/N") +
@@ -354,7 +355,7 @@ Ca_foliar_trend <- as.data.frame(cbind(Ca_foliar_seq, Ca_foliar_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = Ca_foliar_trend, aes(x = Ca_foliar_seq, y = Ca_foliar_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -372,7 +373,7 @@ Anova(P_foliar_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylim(c(0, 5000)) +
@@ -389,7 +390,7 @@ Anova(K_foliar_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     # geom_line(data = K_foliar_f_trend, aes(x = K_foliar_f_seq, y = K_foliar_f_trend), 
     #           col = 'red', lwd = 2, alpha = 0.8) +
     # geom_line(data = K_foliar_nf_trend, aes(x = K_foliar_nf_seq, y = K_foliar_nf_trend), 
@@ -410,7 +411,7 @@ Anova(Mg_foliar_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Foliar Mg" ^ "2+ " * "(mg kg"^{-1}*")")) +
@@ -426,7 +427,7 @@ Anova(Al_foliar_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Foliar Al" ^ "+" * "(mg kg"^{-1}*")")) +
@@ -448,7 +449,7 @@ Zn_foliar_trend <- as.data.frame(cbind(Zn_foliar_seq, Zn_foliar_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = Zn_foliar_trend, aes(x = Zn_foliar_seq, y = Zn_foliar_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -484,7 +485,7 @@ C_soil_trend <- as.data.frame(cbind(C_soil_seq, C_soil_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = C_soil_trend, aes(x = C_soil_seq, y = C_soil_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -502,7 +503,7 @@ Anova(N_soil_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Soil N (%)")) +
@@ -518,7 +519,7 @@ Anova(CN_soil_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     # geom_line(data = CN_soil_trend, aes(x = CN_soil_seq, y = CN_soil_trend), 
     #           col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -543,7 +544,7 @@ Ca_soil_trend <- as.data.frame(cbind(Ca_soil_seq, Ca_soil_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = Ca_soil_trend, aes(x = Ca_soil_seq, y = Ca_soil_trend), 
               col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -562,7 +563,7 @@ Anova(P_soil_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     # geom_line(data = P_soil_trend, aes(x = P_soil_seq, y = P_soil_trend), 
     #           col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -580,7 +581,7 @@ Anova(K_soil_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     # geom_line(data = K_soil_trend, aes(x = K_soil_seq, y = K_soil_trend), 
     #           col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -599,7 +600,7 @@ Anova(Mg_soil_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     # geom_line(data = Mg_soil_trend, aes(x = Mg_soil_seq, y = Mg_soil_trend), 
     #           col = 'black', lwd = 2, alpha = 0.8) +
     theme_few(base_size = 16) + 
@@ -629,7 +630,7 @@ Al_soil_nf_trend <- as.data.frame(cbind(Al_soil_nf_seq, Al_soil_nf_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = Al_soil_f_trend, aes(x = Al_soil_f_seq, y = Al_soil_f_trend), 
               col = 'red', lwd = 2, alpha = 0.8) +
     geom_line(data = Al_soil_nf_trend, aes(x = Al_soil_nf_seq, y = Al_soil_nf_trend), 
@@ -649,7 +650,7 @@ Anova(Zn_soil_lm)
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     theme_few(base_size = 16) + 
     scale_x_continuous(name = "Elevation (m)", limits = c(0, 500)) +
     ylab(expression("Soil Zn (mg kg"^{-1}*")")) +
@@ -677,7 +678,7 @@ retention_nf_trend <- as.data.frame(cbind(retention_nf_seq, retention_nf_trend))
     scale_color_manual(values = c('red', 'blue'),
                        labels = c('Exposure to 1947 fire', 'No exposure to 1947 fire')) +
     scale_shape_manual(values = c(8, 17, 18, 15), 
-                       labels = c('GOR', 'SCT', 'WON', 'STS')) +
+                       labels = c('GOR', 'SCT', 'SST', 'WON')) +
     geom_line(data = retention_f_trend, aes(x = retention_f_seq, y = retention_f_trend), 
               col = 'red', lwd = 2, alpha = 0.8) +
     geom_line(data = retention_nf_trend, aes(x = retention_nf_seq, y = retention_nf_trend), 
